@@ -29,13 +29,15 @@ static void printKeys()
   std::cout << "- i : toggle zoom in" << std::endl;
   std::cout << "- o : toggle zoom out" << std::endl;
   std::cout << "- G : toggle gridlines" << std::endl;
+  std::cout << "- R : toggle reference path" << std::endl;
   std::cout << "- space : screenshot (saved in Desktop)" << std::endl;
   std::cout << "- esc : terminate" << std::endl;
 }
 
-ofApp::ofApp(Graph* _G, Solution* _P, bool _flg_capture_only)
+ofApp::ofApp(Graph* _G, Solution* _P, ReferencePath* _R, bool _flg_capture_only)
     : G(_G),
       P(_P),
+      R(_R),
       N(P->front().size()),
       T(P->size() - 1),
       goals(P->back()),
@@ -52,7 +54,9 @@ ofApp::ofApp(Graph* _G, Solution* _P, bool _flg_capture_only)
       flg_zoomout(false),
       flg_zoomin(false),
       flg_grid(true),
-      line_mode(flg_capture_only ? LINE_MODE::PATH : LINE_MODE::STRAIGHT)
+      flg_reference_path(true),
+      line_mode(LINE_MODE::NONE)
+      // line_mode(flg_capture_only ? LINE_MODE::PATH : LINE_MODE::STRAIGHT)
 {
 }
 
@@ -243,6 +247,46 @@ void ofApp::draw()
     }
   }
 
+  // 参照軌道の描画
+  if (R != nullptr && flg_reference_path) {
+    ofSetLineWidth(3);  // 線を太くする
+
+    // 現在のステップを取得
+    int current_step = (int)timestep_slider;
+
+    for (size_t i = 0; i < R->paths.size(); ++i) {
+      if (i >= R->paths.size() || R->paths[i].empty()) continue;
+      
+      // エージェントの基本色を取得
+      ofColor base_color = Color::agents[i % Color::agents.size()];
+      
+      // 現在のステップの参照軌道を描画
+      if (current_step < R->paths[i].size()) {
+        const auto& current_config = R->paths[i][current_step];
+        if (!current_config.empty()) {
+          // 現在のステップの軌道を描画
+          for (size_t j = 0; j < current_config.size() - 1; ++j) {
+            const auto& current = current_config[j];
+            const auto& next = current_config[j + 1];
+
+            // 透明度を計算（jが大きいほど透明度が上がる）
+            float alpha = ofMap(j, 0, current_config.size() - 1, 255, 50);
+            ofColor line_color = base_color;
+            line_color.a = alpha;
+            ofSetColor(line_color);
+
+            float x1 = current.v->x * scale + window_x_buffer + scale / 2;
+            float y1 = current.v->y * scale + window_y_top_buffer + scale / 2;
+            float x2 = next.v->x * scale + window_x_buffer + scale / 2;
+            float y2 = next.v->y * scale + window_y_top_buffer + scale / 2;
+
+            ofDrawLine(x1, y1, x2, y2);
+          }
+        }
+      }
+    }
+  }
+
   if (flg_snapshot) {
     ofEndSaveScreenAsPDF();
     flg_snapshot = false;
@@ -255,44 +299,65 @@ void ofApp::draw()
 
 void ofApp::keyPressed(int key)
 {
-  if (key == 'r') timestep_slider = 0;  // reset
-  if (key == 'p') flg_autoplay = !flg_autoplay;
-  if (key == 'l') flg_loop = !flg_loop;
-  if (key == 'g') flg_goal = !flg_goal;
-  if (key == 'f') {
-    flg_font = !flg_font;
-    flg_font &= (scale - font_size > 6);
-  }
-  if (key == 32) flg_snapshot = true;  // space
-  if (key == 'v') {
-    line_mode =
-        static_cast<LINE_MODE>(((int)line_mode + 1) % (int)LINE_MODE::NUM);
-  }
-  float t;
-  if (key == OF_KEY_RIGHT) {
-    t = timestep_slider + speed_slider;
-    timestep_slider = std::min((float)T, t);
-  }
-  if (key == OF_KEY_LEFT) {
-    t = timestep_slider - speed_slider;
-    timestep_slider = std::max((float)0, t);
-  }
-  if (key == OF_KEY_UP) {
-    t = speed_slider + 0.001;
-    speed_slider = std::min(t, (float)speed_slider.getMax());
-  }
-  if (key == OF_KEY_DOWN) {
-    t = speed_slider - 0.001;
-    speed_slider = std::max(t, (float)speed_slider.getMin());
-  }
-  if (key == 'i') {
-    flg_zoomin = !flg_zoomin;
-  }
-  if (key == 'o') {
-    flg_zoomout = !flg_zoomout;
-  }
-  if (key == 'G') {
-    flg_grid = !flg_grid;
+  float t;  // 変数をswitch文の外で宣言
+  switch (key) {
+    case 'p':
+      flg_autoplay = !flg_autoplay;
+      break;
+    case 'l':
+      flg_loop = !flg_loop;
+      break;
+    case 'r':
+      timestep_slider = 0;
+      break;
+    case 'v':
+      if (line_mode == LINE_MODE::STRAIGHT)
+        line_mode = LINE_MODE::PATH;
+      else if (line_mode == LINE_MODE::PATH)
+        line_mode = LINE_MODE::NONE;
+      else
+        line_mode = LINE_MODE::STRAIGHT;
+      break;
+    case 'f':
+      flg_font = !flg_font;
+      break;
+    case 'g':
+      flg_goal = !flg_goal;
+      break;
+    case 'i':
+      flg_zoomin = !flg_zoomin;
+      break;
+    case 'o':
+      flg_zoomout = !flg_zoomout;
+      break;
+    case 'G':
+      flg_grid = !flg_grid;
+      break;
+    case 'R':  // 参照軌道の表示/非表示を切り替え
+      flg_reference_path = !flg_reference_path;
+      break;
+    case 32:  // space
+      flg_snapshot = true;
+      break;
+    case OF_KEY_RIGHT:
+      t = timestep_slider + speed_slider;
+      timestep_slider = std::min((float)T, t);
+      break;
+    case OF_KEY_LEFT:
+      t = timestep_slider - speed_slider;
+      timestep_slider = std::max((float)0, t);
+      break;
+    case OF_KEY_UP:
+      t = speed_slider + 0.001;
+      speed_slider = std::min(t, (float)speed_slider.getMax());
+      break;
+    case OF_KEY_DOWN:
+      t = speed_slider - 0.001;
+      speed_slider = std::max(t, (float)speed_slider.getMin());
+      break;
+    case 27:  // esc
+      std::exit(0);
+      break;
   }
 }
 

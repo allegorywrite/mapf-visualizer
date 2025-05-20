@@ -73,6 +73,13 @@ using Config =
     std::vector<Pose>;  // a set of locations and orientations for all agents
 using Solution = std::vector<Config>;
 
+// 参照軌道のデータ構造
+struct ReferencePath {
+  std::vector<std::vector<Config>> paths;  // 各エージェントの参照軌道（時系列）
+  int history_size;                        // 履歴サイズ
+  ReferencePath() : history_size(0) {}
+};
+
 struct Graph {
   Vertices V;  // without nullptr
   Vertices U;  // with nullptr

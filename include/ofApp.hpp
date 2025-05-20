@@ -9,6 +9,7 @@ class ofApp : public ofBaseApp
 public:
   const Graph* G;
   const Solution* P;  // plan
+  const ReferencePath* R;  // reference path
   const int N;        // number of agents
   const int T;        // makespan
   const Config goals;
@@ -29,6 +30,7 @@ public:
   bool flg_zoomout;
   bool flg_zoomin;
   bool flg_grid;
+  bool flg_reference_path;  // 参照軌道の表示フラグ
 
   enum struct LINE_MODE { STRAIGHT, PATH, NONE, NUM };
   LINE_MODE line_mode;
@@ -60,5 +62,5 @@ public:
   void dragEvent(ofDragInfo dragInfo);
   void gotMessage(ofMessage msg);
 
-  ofApp(Graph* _G, Solution* _P, bool flg_capture_only = false);
+  ofApp(Graph* _G, Solution* _P, ReferencePath* _R = nullptr, bool flg_capture_only = false);
 };
