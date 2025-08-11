@@ -10,9 +10,11 @@ public:
   const Graph* G;
   const Solution* P;  // plan
   const ReferencePath* R;  // reference path
+  const DynamicGoals* D;  // dynamic goals for lifelong mode
   const int N;        // number of agents
   const int T;        // makespan
   const Config goals;
+  const bool lifelong_mode;  // lifelong mode flag
 
   // size
   const int scale;
@@ -62,5 +64,5 @@ public:
   void dragEvent(ofDragInfo dragInfo);
   void gotMessage(ofMessage msg);
 
-  ofApp(Graph* _G, Solution* _P, ReferencePath* _R = nullptr, bool flg_capture_only = false);
+  ofApp(Graph* _G, Solution* _P, ReferencePath* _R = nullptr, DynamicGoals* _D = nullptr, bool flg_capture_only = false, bool _lifelong_mode = false);
 };

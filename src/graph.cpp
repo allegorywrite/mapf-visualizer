@@ -56,6 +56,7 @@ Graph::Graph(char* filename) : V(Vertices()), width(0), height(0)
     for (int x = 0; x < width; ++x) {
       char s = line[x];
       if (s == 'T' or s == '@') continue;  // object
+      // treat 'e' (endpoint) and 'r' (robot home) as passable cells
       auto index = width * y + x;
       auto v = new Vertex(V.size(), index, x, y);
       V.push_back(v);

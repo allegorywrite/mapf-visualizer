@@ -34,13 +34,15 @@ static void printKeys()
   std::cout << "- esc : terminate" << std::endl;
 }
 
-ofApp::ofApp(Graph* _G, Solution* _P, ReferencePath* _R, bool _flg_capture_only)
+ofApp::ofApp(Graph* _G, Solution* _P, ReferencePath* _R, DynamicGoals* _D, bool _flg_capture_only, bool _lifelong_mode)
     : G(_G),
       P(_P),
       R(_R),
+      D(_D),
       N(P->front().size()),
       T(P->size() - 1),
       goals(P->back()),
+      lifelong_mode(_lifelong_mode),
       scale(get_scale(G)),
       agent_rad(scale / std::sqrt(2) / 2),
       goal_rad(scale / 4.0),
@@ -146,10 +148,22 @@ void ofApp::draw()
 
   // draw goals
   if (flg_goal) {
-    for (int i = 0; i < N; ++i) {
+    Config current_goals;
+    if (lifelong_mode && D && !D->timestep_goals.empty()) {
+      int timestep = (int)timestep_slider;
+      if (timestep < D->timestep_goals.size()) {
+        current_goals = D->timestep_goals[timestep];
+      } else {
+        current_goals = goals;  // fallback to original goals
+      }
+    } else {
+      current_goals = goals;
+    }
+    
+    for (int i = 0; i < N && i < current_goals.size(); ++i) {
       ofSetColor(Color::agents[i % Color::agents.size()]);
-      auto g = goals[i].v;
-      auto o = goals[i].o;
+      auto g = current_goals[i].v;
+      auto o = current_goals[i].o;
       int x = g->x * scale + window_x_buffer + scale / 2;
       int y = g->y * scale + window_y_top_buffer + scale / 2;
       ofDrawRectangle(x - goal_rad / 2, y - goal_rad / 2, goal_rad, goal_rad);
@@ -202,8 +216,22 @@ void ofApp::draw()
 
     // goal
     if (line_mode == LINE_MODE::STRAIGHT) {
-      ofDrawLine(goals[i].v->x * scale + window_x_buffer + scale / 2,
-                 goals[i].v->y * scale + window_y_top_buffer + scale / 2, x, y);
+      Config current_goals;
+      if (lifelong_mode && D && !D->timestep_goals.empty()) {
+        int timestep = (int)timestep_slider;
+        if (timestep < D->timestep_goals.size()) {
+          current_goals = D->timestep_goals[timestep];
+        } else {
+          current_goals = goals;  // fallback to original goals
+        }
+      } else {
+        current_goals = goals;
+      }
+      
+      if (i < current_goals.size()) {
+        ofDrawLine(current_goals[i].v->x * scale + window_x_buffer + scale / 2,
+                   current_goals[i].v->y * scale + window_y_top_buffer + scale / 2, x, y);
+      }
     } else if (line_mode == LINE_MODE::PATH) {
       // next loc
       ofSetLineWidth(2);
@@ -225,7 +253,19 @@ void ofApp::draw()
     }
 
     // agent at goal
-    if (p_t1 == goals[i]) {
+    Config current_goals;
+    if (lifelong_mode && D && !D->timestep_goals.empty()) {
+      int timestep = (int)timestep_slider;
+      if (timestep < D->timestep_goals.size()) {
+        current_goals = D->timestep_goals[timestep];
+      } else {
+        current_goals = goals;  // fallback to original goals
+      }
+    } else {
+      current_goals = goals;
+    }
+    
+    if (i < current_goals.size() && p_t1 == current_goals[i]) {
       ofSetColor(255, 255, 255);
       ofDrawCircle(x, y, agent_rad * 0.7);
     }

@@ -80,6 +80,12 @@ struct ReferencePath {
   ReferencePath() : history_size(0) {}
 };
 
+// 動的ゴール（lifelong MAPF用）のデータ構造
+struct DynamicGoals {
+  std::vector<Config> timestep_goals;  // 各タイムステップでのゴール設定 (timestep_goals[timestep] = そのタイムステップでの全エージェントのゴール)
+  DynamicGoals() {}
+};
+
 struct Graph {
   Vertices V;  // without nullptr
   Vertices U;  // with nullptr
