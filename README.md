@@ -125,4 +125,4 @@ This software is released under the MIT License, see [LICENSE.txt](LICENCE.txt).
 
 ## Maintainer
 
-[Keisuke Okumura](https://kei18.github.io)
+[Tomoki Arita](https://tomoking.dev/), [Keisuke Okumura](https://kei18.github.io)
