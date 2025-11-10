@@ -169,16 +169,9 @@ int main(int argc, char *argv[])
       }
     }
 
-    // 通常の解の読み込み
     if (!in_reference_section && !in_goals_section && line.find(":(") != std::string::npos) {
       auto iter = line.cbegin();
       Config c;
-      
-      // Debug: Check if this is agent 0's trajectory
-      bool is_agent0 = line.find("0:(") == 0;
-      if (is_agent0) {
-        std::cout << "DEBUG: Parsing agent 0 solution: " << line.substr(0, 50) << "..." << std::endl;
-      }
       
       while (iter < line.cend()) {
         auto search_end = std::min(iter + 128, line.cend());
@@ -191,21 +184,12 @@ int main(int argc, char *argv[])
           }
           c.push_back(Pose(G.U[G.width * y + x], o));
           
-          // Debug: Log first 5 positions for agent 0
-          if (is_agent0 && c.size() <= 5) {
-            std::cout << "DEBUG: Agent 0 position " << c.size() << ": (" << x << "," << y << ")" << std::endl;
-          }
-          
           iter += m[0].length();
         } else {
           break;
         }
       }
       solution.push_back(c);
-      
-      if (is_agent0) {
-        std::cout << "DEBUG: Agent 0 solution loaded with " << c.size() << " positions" << std::endl;
-      }
     }
   }
   solution_file.close();

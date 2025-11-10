@@ -26,7 +26,7 @@ Based on [openFrameworks](https://openframeworks.cc/), written in C++14.
 ### for macOS
 
 ```sh
-git clone --recursive https://github.com/Kei18/mapf-visualizer.git
+git clone --recursive https://github.com/allegorywrite/mapf-visualizer.git
 cd mapf-visualizer
 bash third_party/openFrameworks/scripts/osx/download_libs.sh
 make -j4
@@ -38,7 +38,7 @@ required: around 10 minutes
 ### for Ubuntu 24.04
 
 ```sh
-git clone https://github.com/Kei18/mapf-visualizer.git
+git clone https://github.com/allegorywrite/mapf-visualizer.git
 cd mapf-visualizer
 wget -O third_party/openFrameworks.tar.gz https://github.com/openframeworks/openFrameworks/releases/download/0.12.0/of_v0.12.0_linux64gcc6_release.tar.gz
 tar -xzvf third_party/openFrameworks.tar.gz -C third_party --strip-components=1 --one-top-level=openFrameworks
